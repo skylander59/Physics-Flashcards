@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics Questions Flashcards</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="text/javascript" id="MathJax-script" async>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']] // Configure MathJax to recognize $ for inline math
+            },
+            svg: {
+                fontCache: 'global' // Optimize font loading
+            }
+        };
+    </script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Light blue-gray background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden; /* Prevent scrollbar from flashcard flip */
+        }
+        .flashcard-container {
+            perspective: 1000px; /* For 3D flip effect */
+            width: 90%; /* Responsive width */
+            max-width: 600px; /* Max width for larger screens */
+            height: 300px; /* Fixed height for flashcard */
+            margin: 20px;
+        }
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s ease-in-out;
+            border-radius: 1rem; /* Rounded corners */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15); /* Soft shadow */
+        }
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+        .flashcard-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            text-align: center;
+            background-color: #ffffff; /* White background for card */
+            border-radius: 1rem; /* Rounded corners */
+            font-size: 1.25rem; /* Larger text */
+            color: #334155; /* Darker text */
+            line-height: 1.5;
+            overflow-y: auto; /* Allow scrolling for long content */
+        }
+        .flashcard-front {
+            z-index: 2;
+            transform: rotateY(0deg);
+        }
+        .flashcard-back {
+            transform: rotateY(180deg);
+            background-color: #e0f2fe; /* Lighter blue for back */
+            color: #1e3a8a; /* Dark blue text for back */
+        }
+        .navigation-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem; /* Space between buttons */
+            margin-top: 2rem;
+            width: 100%;
+            max-width: 600px;
+        }
+        .nav-button {
+            padding: 0.75rem 1.5rem;
+            background-color: #3b82f6; /* Blue button */
+            color: white;
+            border: none;
+            border-radius: 0.5rem; /* Rounded button corners */
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .nav-button:hover {
+            background-color: #2563eb; /* Darker blue on hover */
+            transform: translateY(-2px); /* Slight lift effect */
+        }
+        .nav-button:disabled {
+            background-color: #9ca3af; /* Gray for disabled */
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="flex flex-col items-center p-4 w-full">
+        <h1 class="text-3xl font-bold text-gray-800 mb-8 mt-4 md:mt-8">Physics Questions Flashcards</h1>
+
+        <div class="flashcard-container">
+            <div id="flashcard" class="flashcard" onclick="flipCard()">
+                <div class="flashcard-face flashcard-front">
+                    <p id="front-content"></p>
+                </div>
+                <div class="flashcard-face flashcard-back">
+                    <p id="back-content"></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation-buttons">
+            <button id="prevBtn" class="nav-button" onclick="showPrevCard()" disabled>Previous</button>
+            <button id="nextBtn" class="nav-button" onclick="showNextCard()">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Array of flashcard data (Question on front, Equation on back)
+        const flashcards = [
+            { front: "What is the formula used to define speed, $v$, in terms of distance travelled, $s$, and time, $t$?", back: "$v=\\frac{s}{t}$" },
+            { front: "How would you calculate the average speed of an object?", back: "$\\text{average speed} = \\frac{\\text{total distance travelled}}{\\text{total time taken}}$" },
+            { front: "Write down the equation that defines acceleration in terms of change in velocity ($\\Delta v$) and change in time ($\\Delta t$).", back: "$a=\\frac{\\Delta v}{\\Delta t}$" },
+            { front: "What is the formula for gravitational field strength, $g$, in terms of weight, $W$, and mass, $m$?", back: "$g=\\frac{W}{m}$" },
+            { front: "How is density, $\\rho$, defined in terms of mass, $m$, and volume, $V$?", back: "$\\rho=\\frac{m}{V}$" },
+            { front: "State Newton's Second Law of Motion, relating resultant force, $F$, mass, $m$, and acceleration, $a$.", back: "$F=ma$" },
+            { front: "What is the formula for the spring constant, $k$, in terms of force, $F$, and extension, $x$?", back: "$k=\\frac{F}{x}$" },
+            { front: "How do you calculate the moment of a force?", back: "$\\text{moment} = \\text{force} \\times \\text{perpendicular distance from the pivot}$" },
+            { front: "Write down the equation for kinetic energy, $E_k$, in terms of mass, $m$, and velocity, $v$.", back: "$E_{k}=\\frac{1}{2}mv^{2}$" },
+            { front: "What is the formula for the change in gravitational potential energy, $\\Delta E_p$, in terms of mass, $m$, gravitational field strength, $g$, and change in height, $\\Delta h$?", back: "$\\Delta E_{p}=mg\\Delta h$" },
+            { front: "State the equation for mechanical work, $W$, relating force, $F$, distance, $d$, and change in energy, $\\Delta E$.", back: "$W=Fd=\\Delta E$" },
+            { front: "How is efficiency defined in terms of useful energy output and total energy input?", back: "$\\text{efficiency} = \\frac{\\text{useful energy output}}{\\text{total energy input}} \\times 100 \\%$" },
+            { front: "How is efficiency defined in terms of useful power output and total power input?", back: "$\\text{efficiency} = \\frac{\\text{useful power output}}{\\text{total power input}} \\times 100 \\%$" },
+            { front: "What are the two formulas used to define power, $P$, in terms of work done, $W$, or energy transferred, $\\Delta E$, and time, $t$?", back: "$P=\\frac{W}{t}$ or $P=\\frac{\\Delta E}{t}$" },
+            { front: "What is the formula for pressure, $p$, in terms of force, $F$, and area, $A$?", back: "$p=\\frac{F}{A}$" },
+            { front: "What is the relationship between period, $T$, and frequency, $f$?", back: "$T=1/f$ or $f=1/T$" },
+            { front: "Write down the equation for wave speed, $v$, in terms of frequency, $f$, and wavelength, $\\lambda$.", back: "$v=f\\lambda$" },
+            { front: "State Snell's Law, which relates the refractive index, $n$, to the angle of incidence, $i$, and the angle of refraction, $r$.", back: "$n=\\frac{\\sin i}{\\sin r}$" },
+            { front: "How is electric current, $I$, defined in terms of charge, $Q$, and time, $t$?", back: "$I=\\frac{Q}{t}$" },
+            { front: "What is the equation for resistance, $R$, in terms of voltage, $V$, and current, $I$?", back: "$R=\\frac{V}{I}$" },
+            { front: "Write down the equation for electrical power, $P$, in terms of current, $I$, and voltage, $V$.", back: "$P=IV$" },
+            { front: "What is the formula for electrical energy, $E$, in terms of current, $I$, voltage, $V$, and time, $t$?", back: "$E=IVt$" },
+            { front: "State the transformer equation relating the primary and secondary voltages ($V_P$, $V_s$) and the number of turns in the primary and secondary coils ($N_p$, $N_s$).", back: "$\\frac{V_{P}}{V_{s}}=\\frac{N_{p}}{N_{s}}$" },
+            { front: "What is the equation for 100% efficiency in a transformer, relating primary and secondary currents and voltages ($I_p, V_p, I_s, V_s$)?", back: "$I_{p}V_{p}=I_{s}V_{s}$" },
+            { front: "What is the formula for power losses in cables, $P$, in terms of current, $I$, and resistance, $R$?", back: "$P=I^{2}R$" },
+            { front: "What is the formula for orbital speed, $v$, in terms of the radius of the orbit, $r$, and the orbital period, $T$?", back: "$v=\\frac{2\\pi r}{T}$" }
+        ];
+
+        let currentCardIndex = 0;
+        let isFlipped = false;
+
+        const flashcardElement = document.getElementById('flashcard');
+        const frontContentElement = document.getElementById('front-content');
+        const backContentElement = document.getElementById('back-content');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+
+        /**
+         * Displays the current flashcard based on `currentCardIndex`.
+         * Updates the front and back content and triggers MathJax rendering.
+         * Also updates the state of navigation buttons.
+         */
+        async function displayCard() {
+            const card = flashcards[currentCardIndex];
+
+            // Wait for MathJax to be ready if it's not already
+            if (typeof MathJax !== 'undefined' && MathJax.startup && MathJax.startup.promise) {
+                await MathJax.startup.promise;
+            }
+
+            // Set the raw text content with LaTeX syntax
+            frontContentElement.innerHTML = card.front;
+            backContentElement.innerHTML = card.back;
+
+            // Typeset the content with MathJax to render the equations
+            // We target the specific elements that contain the new content.
+            if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
+                 MathJax.typesetPromise([frontContentElement, backContentElement])
+                    .catch((err) => console.error('MathJax typesetting failed:', err));
+            }
+
+            // Update button states
+            prevBtn.disabled = currentCardIndex === 0;
+            nextBtn.disabled = currentCardIndex === flashcards.length - 1;
+
+            // Ensure card is not flipped when moving to a new card
+            if (isFlipped) {
+                flashcardElement.classList.remove('flipped');
+                isFlipped = false;
+            }
+        }
+
+        /**
+         * Flips the flashcard to show the other side.
+         */
+        function flipCard() {
+            flashcardElement.classList.toggle('flipped');
+            isFlipped = !isFlipped;
+        }
+
+        /**
+         * Shows the next flashcard in the sequence.
+         */
+        function showNextCard() {
+            if (currentCardIndex < flashcards.length - 1) {
+                currentCardIndex++;
+                displayCard();
+            }
+        }
+
+        /**
+         * Shows the previous flashcard in the sequence.
+         */
+        function showPrevCard() {
+            if (currentCardIndex > 0) {
+                currentCardIndex--;
+                displayCard();
+            }
+        }
+
+        // Initialize the first card when the window loads
+        window.onload = async function() {
+            await displayCard();
+        };
+    </script>
+</body>
+</html>
